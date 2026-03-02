@@ -1,0 +1,84 @@
+# The Core Brief - Source Configuration
+# RSS feeds, APIs, and monitoring targets for nuclear industry news
+
+regulatory:
+  - name: "US NRC Event Notifications"
+    url: "https://www.nrc.gov/reading-rm/doc-collections/event-status/event/index.html"
+    type: "scrape"
+    keywords: ["event", "notification", "reactor", "radiation", "exposure"]
+    
+  - name: "CNSC Event Initial Reports"
+    url: "https://www.cnsc-ccsn.gc.ca/eng/acts-and-regulations/regulatory-documents/published/html/regdoc3-1-2/index.cfm"
+    type: "scrape"
+    keywords: ["event", "incident", "report"]
+    
+  - name: "IAEA News"
+    url: "https://www.iaea.org/news"
+    type: "rss"
+    feed_url: "https://www.iaea.org/feeds/news"
+    
+  - name: "UK ONR"
+    url: "https://www.onr.org.uk/news.htm"
+    type: "scrape"
+    keywords: ["nuclear", "safety", "enforcement"]
+
+industry_news:
+  - name: "World Nuclear News"
+    url: "https://world-nuclear-news.org"
+    type: "rss"
+    feed_url: "https://www.world-nuclear-news.org/Articles/rss"
+    
+  - name: "Nuclear Engineering International"
+    url: "https://www.neimagazine.com"
+    type: "rss"
+    feed_url: "https://www.neimagazine.com/rss/news"
+    
+  - name: "Power Engineering International"
+    url: "https://www.powerengineeringint.com/nuclear"
+    type: "rss"
+    feed_url: "https://www.powerengineeringint.com/nuclear/feed/"
+    
+  - name: "Nuclear Newswire (ANS)"
+    url: "https://www.ans.org/news/"
+    type: "rss"
+    feed_url: "https://www.ans.org/news/feed/"
+
+research:
+  - name: "arXiv Nuclear Physics"
+    url: "https://arxiv.org"
+    type: "rss"
+    feed_url: "http://export.arxiv.org/rss/nucl-ex"
+    
+  - name: "Oak Ridge National Lab News"
+    url: "https://www.ornl.gov/news"
+    type: "rss"
+    feed_url: "https://www.ornl.gov/rss/news.xml"
+    
+  - name: "Idaho National Lab News"
+    url: "https://inl.gov/news/"
+    type: "rss"
+    feed_url: "https://inl.gov/feed/"
+
+news_aggregators:
+  - name: "Google News - Nuclear Energy"
+    type: "google_news"
+    query: "nuclear energy OR nuclear power"
+    
+  - name: "Google News - Radiation Safety"
+    type: "google_news"
+    query: "radiation safety OR radioactive contamination"
+
+community:
+  - name: "r/nuclear"
+    url: "https://reddit.com/r/nuclear"
+    type: "reddit"
+    
+  - name: "r/NuclearPower"
+    url: "https://reddit.com/r/NuclearPower"
+    type: "reddit"
+
+keywords:
+  incidents: ["radiation", "contamination", "tritium", "dose", "ALARA", "uptake", "exposure", "leak", "spill", "incident", "event"]
+  tech: ["SMR", "small modular reactor", "Gen IV", "generation IV", "fuel cycle", "decommissioning", "waste", "repository"]
+  regulatory: ["enforcement", "violation", "inspection", "license", "NRC", "CNSC", "IAEA", "safety culture"]
+  projects: ["new build", "construction", "reactor", "Vogtle", "Barakah", "Hinkley Point", "financing"]
