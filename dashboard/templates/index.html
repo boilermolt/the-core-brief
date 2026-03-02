@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Core Brief - Story Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            color: #00ff88;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .meta {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            background: #2a2a2a;
+            border-color: #00ff88;
+        }
+        .filter-btn.active {
+            background: #00ff88;
+            color: #0a0a0a;
+            border-color: #00ff88;
+        }
+        #stories {
+            display: grid;
+            gap: 1rem;
+        }
+        .story-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+        .story-card:hover {
+            border-color: #00ff88;
+            transform: translateY(-2px);
+        }
+        .story-title {
+            color: #00ff88;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+            display: block;
+        }
+        .story-title:hover {
+            text-decoration: underline;
+        }
+        .story-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: #888;
+        }
+        .story-source {
+            color: #00aaff;
+        }
+        .story-category {
+            background: #2a2a2a;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+        .story-score {
+            color: #ff8800;
+            font-weight: bold;
+        }
+        .story-keywords {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+        .keyword {
+            background: #2a2a2a;
+            color: #00ff88;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .story-summary {
+            color: #bbb;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔳 The Core Brief</h1>
+            <div class="meta">
+                Story Dashboard · Last updated: {{ fetched_at }} · {{ item_count }} items
+            </div>
+        </header>
+
+        <div class="filters">
+            <button class="filter-btn active" data-category="all">All Stories</button>
+            <button class="filter-btn" data-category="regulatory">Regulatory</button>
+            <button class="filter-btn" data-category="industry_news">Industry News</button>
+            <button class="filter-btn" data-category="research">Research</button>
+            <button class="filter-btn" data-category="community">Community</button>
+        </div>
+
+        <div id="stories">
+            <div class="loading">Loading stories...</div>
+        </div>
+    </div>
+
+    <script>
+        let allStories = [];
+
+        async function loadStories() {
+            const resp = await fetch('/api/stories');
+            const data = await resp.json();
+            allStories = data.items;
+            renderStories(allStories);
+        }
+
+        function renderStories(stories) {
+            const container = document.getElementById('stories');
+            
+            if (stories.length === 0) {
+                container.innerHTML = '<div class="loading">No stories found</div>';
+                return;
+            }
+
+            container.innerHTML = stories.map(story => `
+                <div class="story-card">
+                    <a href="${story.url}" target="_blank" class="story-title">
+                        ${story.title}
+                    </a>
+                    <div class="story-meta">
+                        <span class="story-source">${story.source}</span>
+                        <span class="story-category">${story.category}</span>
+                        <span class="story-score">Score: ${story.score}</span>
+                        ${story.published ? `<span>${new Date(story.published).toLocaleDateString()}</span>` : ''}
+                    </div>
+                    ${story.summary ? `<div class="story-summary">${story.summary.substring(0, 200)}...</div>` : ''}
+                    ${story.keywords_matched.length > 0 ? `
+                        <div class="story-keywords">
+                            ${story.keywords_matched.slice(0, 5).map(k => `<span class="keyword">${k}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function filterByCategory(category) {
+            const filtered = category === 'all' 
+                ? allStories 
+                : allStories.filter(s => s.category === category);
+            renderStories(filtered);
+        }
+
+        // Filter button handlers
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterByCategory(btn.dataset.category);
+            });
+        });
+
+        // Load on page load
+        loadStories();
+    </script>
+</body>
+</html>

@@ -132,6 +132,14 @@ class SourceAggregator:
         
         return items
     
+    def fetch_web_search(self, query: str, source_name: str) -> List[NewsItem]:
+        """Fetch news via web search (using OpenClaw's web_search would be ideal, but we'll use requests to Brave API if available)."""
+        # Note: This is a placeholder. In practice, we'd call OpenClaw's web_search tool or use Brave API directly.
+        # For now, we'll skip implementation and note it in the plan.
+        items = []
+        print(f"  (Web search for '{query}' - integration pending)")
+        return items
+    
     def fetch_nrc_events(self) -> List[NewsItem]:
         """Scrape NRC event notifications page."""
         items = []
