@@ -6,7 +6,8 @@ __pycache__/
 venv/
 env/
 ENV/
-data/
-*.json
+data/cache/
+data/*.db
+data/*.db-journal
 *.log
 .DS_Store
