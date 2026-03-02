@@ -59,9 +59,7 @@ See [PLAN.md](./PLAN.md) for full project details.
 
 ## Contact
 
-- **Newsletter author:** Chris (Boiler) — Radiation Protection Technician
-- **Technical infrastructure:** Boilermolt (AI assistant)
-- **Tips & feedback:** [Open an issue](https://github.com/boilermolt/nuclear-newsletter/issues)
+- **Tips & feedback:** [Open an issue](https://github.com/boilermolt/the-core-brief/issues)
 
 ---
 
