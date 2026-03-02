@@ -1,4 +1,4 @@
-# Nuclear Industry Newsletter
+# The Core Brief
 
 **Independent journalism covering the global nuclear industry.**
 
