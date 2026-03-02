@@ -13,6 +13,8 @@ from pathlib import Path
 from dataclasses import dataclass, asdict
 from typing import List, Dict, Optional
 import hashlib
+import re
+from bs4 import BeautifulSoup
 
 @dataclass
 class NewsItem:
@@ -101,6 +103,82 @@ class SourceAggregator:
         item.score = len(item.keywords_matched)
         return item
     
+    def fetch_reddit(self, subreddit: str, source_name: str) -> List[NewsItem]:
+        """Fetch posts from a subreddit using JSON API."""
+        items = []
+        try:
+            url = f"https://reddit.com/r/{subreddit}/hot.json?limit=25"
+            headers = {'User-Agent': 'TheCoreBrief/1.0'}
+            resp = requests.get(url, headers=headers, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+            
+            for post in data['data']['children']:
+                post_data = post['data']
+                pub_date = datetime.fromtimestamp(post_data['created_utc'])
+                
+                item = NewsItem(
+                    title=post_data['title'],
+                    url=f"https://reddit.com{post_data['permalink']}",
+                    source=source_name,
+                    published=pub_date,
+                    summary=post_data.get('selftext', '')[:500],
+                    category='community',
+                    keywords_matched=[]
+                )
+                items.append(item)
+        except Exception as e:
+            print(f"Error fetching Reddit r/{subreddit}: {e}")
+        
+        return items
+    
+    def fetch_nrc_events(self) -> List[NewsItem]:
+        """Scrape NRC event notifications page."""
+        items = []
+        try:
+            url = "https://www.nrc.gov/reading-rm/doc-collections/event-status/event/index.html"
+            headers = {'User-Agent': 'TheCoreBrief/1.0'}
+            resp = requests.get(url, headers=headers, timeout=10)
+            resp.raise_for_status()
+            
+            soup = BeautifulSoup(resp.text, 'html.parser')
+            
+            # Find event table (structure may vary - this is a starting point)
+            table = soup.find('table')
+            if table:
+                rows = table.find_all('tr')[1:]  # Skip header
+                for row in rows[:20]:  # Limit to 20 most recent
+                    cols = row.find_all('td')
+                    if len(cols) >= 3:
+                        event_num = cols[0].get_text(strip=True)
+                        title = cols[1].get_text(strip=True)
+                        date_str = cols[2].get_text(strip=True) if len(cols) > 2 else ""
+                        
+                        # Try to parse date
+                        pub_date = None
+                        try:
+                            pub_date = datetime.strptime(date_str, '%m/%d/%Y')
+                        except:
+                            pass
+                        
+                        # Build URL (event detail page pattern)
+                        event_url = f"https://www.nrc.gov/reading-rm/doc-collections/event-status/event/{event_num}.html"
+                        
+                        item = NewsItem(
+                            title=f"NRC Event {event_num}: {title}",
+                            url=event_url,
+                            source="NRC Event Notifications",
+                            published=pub_date,
+                            summary=title,
+                            category='regulatory',
+                            keywords_matched=[]
+                        )
+                        items.append(item)
+        except Exception as e:
+            print(f"Error fetching NRC events: {e}")
+        
+        return items
+    
     def fetch_all(self, days_back: int = 7) -> List[NewsItem]:
         """Fetch from all configured sources."""
         all_items = []
@@ -118,6 +196,19 @@ class SourceAggregator:
                         category
                     )
                     all_items.extend(items)
+        
+        # Fetch NRC events
+        print("Fetching NRC Event Notifications...")
+        all_items.extend(self.fetch_nrc_events())
+        
+        # Fetch Reddit
+        community_sources = self.config.get('community', [])
+        for source in community_sources:
+            if source.get('type') == 'reddit':
+                subreddit = source['url'].split('/r/')[-1].strip('/')
+                print(f"Fetching r/{subreddit}...")
+                items = self.fetch_reddit(subreddit, f"r/{subreddit}")
+                all_items.extend(items)
         
         # Filter by date and match keywords
         filtered_items = []
